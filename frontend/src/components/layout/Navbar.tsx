@@ -1,7 +1,7 @@
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
 import { Moon, Sun, Bell, Search, LogOut } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { ROLE_LABELS } from "../../config/permissions";
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -56,6 +56,7 @@ export const Navbar = () => {
               <div className="p-3">
                 <p className="text-sm font-medium">{user?.name || "Admin User"}</p>
                 <p className="text-xs text-muted-foreground truncate">{user?.email || "admin@transitops.com"}</p>
+                {user && <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{ROLE_LABELS[user.role]}</p>}
               </div>
               <div className="border-t border-border p-1">
                 <button 

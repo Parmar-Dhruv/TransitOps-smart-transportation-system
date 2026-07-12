@@ -8,6 +8,8 @@ import { Breadcrumb } from "../components/common/Breadcrumb";
 import { Modal } from "../components/common/Modal";
 import { driversApi } from "../api/drivers.api";
 import { toast } from "sonner";
+import { hasActionAccess } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
 const STATUS_OPTIONS = ["AVAILABLE", "ON_TRIP", "OFF_DUTY", "SUSPENDED"];
 const STATUS_LABELS: Record<string, string> = {
@@ -20,6 +22,10 @@ const emptyForm = {
 };
 
 export default function DriversPage() {
+  const { user } = useAuth();
+  const canCreateDriver = hasActionAccess(user?.role, "drivers", "create");
+  const canEditDriver = hasActionAccess(user?.role, "drivers", "edit");
+  const canDeleteDriver = hasActionAccess(user?.role, "drivers", "delete");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState<any[]>([]);
@@ -103,8 +109,8 @@ export default function DriversPage() {
       id: "actions", header: "Actions",
       cell: ({ row }: any) => (
         <div className="flex gap-2">
-          <button onClick={() => openEdit(row.original)} className="p-1.5 rounded-md hover:bg-muted transition-colors"><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></button>
-          <button onClick={() => setDeleteTarget(row.original)} className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors"><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>
+          {canEditDriver && <button onClick={() => openEdit(row.original)} className="p-1.5 rounded-md hover:bg-muted transition-colors"><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></button>}
+          {canDeleteDriver && <button onClick={() => setDeleteTarget(row.original)} className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors"><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>}
         </div>
       )
     }
@@ -122,7 +128,7 @@ export default function DriversPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => fetchDrivers(pagination.page)} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /></Button>
-          <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add Driver</Button>
+          {canCreateDriver && <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add Driver</Button>}
         </div>
       </div>
 

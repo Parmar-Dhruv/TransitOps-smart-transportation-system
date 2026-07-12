@@ -9,6 +9,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/common/Card";
 import { reportsApi } from "../api/reports.api";
 import { toast } from "sonner";
+import { hasActionAccess } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
 const COLORS = ["#6d28d9", "#dc2626", "#059669", "#d97706", "#0891b2"];
 
@@ -16,6 +18,8 @@ const fmt = (n: number) => `$${Number(n || 0).toLocaleString(undefined, { minimu
 const fmtK = (n: number) => n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n}`;
 
 export default function ReportsPage() {
+  const { user } = useAuth();
+  const canExportReports = hasActionAccess(user?.role, "reports", "export");
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState<string | null>(null);
   const [fleet, setFleet] = useState<any>({});
@@ -87,9 +91,9 @@ export default function ReportsPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchAll} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /></Button>
-          <Button variant="outline" size="sm" isLoading={exporting === "vehicles"} onClick={() => downloadCSV("vehicles")}><Download className="mr-2 h-4 w-4" />Vehicles CSV</Button>
-          <Button variant="outline" size="sm" isLoading={exporting === "drivers"} onClick={() => downloadCSV("drivers")}><Download className="mr-2 h-4 w-4" />Drivers CSV</Button>
-          <Button variant="premium" size="sm" isLoading={exporting === "trips"} onClick={() => downloadCSV("trips")}><Download className="mr-2 h-4 w-4" />Trips CSV</Button>
+          {canExportReports && <Button variant="outline" size="sm" isLoading={exporting === "vehicles"} onClick={() => downloadCSV("vehicles")}><Download className="mr-2 h-4 w-4" />Vehicles CSV</Button>}
+          {canExportReports && <Button variant="outline" size="sm" isLoading={exporting === "drivers"} onClick={() => downloadCSV("drivers")}><Download className="mr-2 h-4 w-4" />Drivers CSV</Button>}
+          {canExportReports && <Button variant="premium" size="sm" isLoading={exporting === "trips"} onClick={() => downloadCSV("trips")}><Download className="mr-2 h-4 w-4" />Trips CSV</Button>}
         </div>
       </div>
 

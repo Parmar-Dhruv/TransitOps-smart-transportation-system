@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { OverviewChart } from "../components/dashboard/OverviewChart";
 import { Button } from "../components/common/Button";
 import { dashboardApi } from "../api/dashboard.api";
 import { toast } from "sonner";
 import { DollarSign, Shield, Truck, Zap, RefreshCw } from "lucide-react";
+import { getAccessibleDashboardShortcuts } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [kpis, setKpis] = useState<any>({});
   const [charts, setCharts] = useState<any>({});
@@ -31,6 +35,8 @@ export default function DashboardPage() {
   const formatPercent = (val: number) =>
     typeof val === "number" ? `${val.toFixed(1)}%` : "0.0%";
 
+  const shortcuts = getAccessibleDashboardShortcuts(user?.role);
+
   const metricCards = [
     { title: "Total Revenue", value: formatCurrency(kpis.totalRevenue), desc: "Fleet operational earnings", icon: DollarSign, color: "text-emerald-500" },
     { title: "Operational Costs", value: formatCurrency(kpis.totalOperationalCost), desc: "Fuel + Maintenance + Expenses", icon: Shield, color: "text-rose-500" },
@@ -51,6 +57,34 @@ export default function DashboardPage() {
           {!loading && <RefreshCw className="mr-2 h-4 w-4" />}
           Refresh Metrics
         </Button>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">Quick Access</h2>
+          <p className="text-sm text-muted-foreground">Only modules available to your role are shown here.</p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {shortcuts.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.id}
+                to={item.path}
+                className="rounded-xl border bg-card p-4 glass transition hover:border-primary/40 hover:bg-primary/5"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">{item.label}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{item.description}</p>
+                  </div>
+                  <Icon className="h-5 w-5 text-primary" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -10,6 +10,8 @@ import { tripsApi } from "../api/trips.api";
 import { vehiclesApi } from "../api/vehicles.api";
 import { driversApi } from "../api/drivers.api";
 import { toast } from "sonner";
+import { hasActionAccess } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Draft", DISPATCHED: "In Transit", COMPLETED: "Completed", CANCELLED: "Cancelled"
@@ -21,6 +23,11 @@ const emptyForm = {
 };
 
 export default function TripsPage() {
+  const { user } = useAuth();
+  const canCreateTrip = hasActionAccess(user?.role, "trips", "create");
+  const canDispatchTrip = hasActionAccess(user?.role, "trips", "dispatch");
+  const canCompleteTrip = hasActionAccess(user?.role, "trips", "complete");
+  const canCancelTrip = hasActionAccess(user?.role, "trips", "cancel");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [data, setData] = useState<any[]>([]);
@@ -140,17 +147,17 @@ export default function TripsPage() {
         const isBusy = saving === trip.id;
         return (
           <div className="flex gap-1.5">
-            {trip.status === "DRAFT" && (
+            {canDispatchTrip && trip.status === "DRAFT" && (
               <button onClick={() => handleDispatch(trip.id)} disabled={!!saving} title="Dispatch" className="p-1.5 rounded-md hover:bg-blue-500/10 text-blue-500 disabled:opacity-50 transition-colors">
                 {isBusy ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
               </button>
             )}
-            {trip.status === "DISPATCHED" && (
+            {canCompleteTrip && trip.status === "DISPATCHED" && (
               <button onClick={() => handleComplete(trip.id)} disabled={!!saving} title="Complete" className="p-1.5 rounded-md hover:bg-emerald-500/10 text-emerald-500 disabled:opacity-50 transition-colors">
                 {isBusy ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
               </button>
             )}
-            {(trip.status === "DRAFT" || trip.status === "DISPATCHED") && (
+            {canCancelTrip && (trip.status === "DRAFT" || trip.status === "DISPATCHED") && (
               <button onClick={() => { setCancelTarget(trip); setCancelReason(""); }} disabled={!!saving} title="Cancel" className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive disabled:opacity-50 transition-colors">
                 <XCircle className="w-3.5 h-3.5" />
               </button>
@@ -173,7 +180,7 @@ export default function TripsPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => fetchTrips(pagination.page)} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /></Button>
-          <Button variant="premium" onClick={openCreate}><Plus className="mr-2 h-4 w-4" />Create Trip</Button>
+          {canCreateTrip && <Button variant="premium" onClick={openCreate}><Plus className="mr-2 h-4 w-4" />Create Trip</Button>}
         </div>
       </div>
 

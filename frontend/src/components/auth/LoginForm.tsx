@@ -33,7 +33,7 @@ export function LoginForm() {
     try {
       const res = await authApi.login(data);
       const payload = res.data.data;
-      login(payload.token, payload.refreshToken || "mock-refresh", payload.user);
+      await login(payload.token, payload.refreshToken || "mock-refresh");
       toast.success("Successfully logged in");
       navigate("/");
     } catch (err: any) {

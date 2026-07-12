@@ -8,6 +8,8 @@ import { Breadcrumb } from "../components/common/Breadcrumb";
 import { Modal } from "../components/common/Modal";
 import { vehiclesApi } from "../api/vehicles.api";
 import { toast } from "sonner";
+import { hasActionAccess } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
 const STATUS_OPTIONS = ["AVAILABLE", "ON_TRIP", "IN_SHOP", "RETIRED"];
 const STATUS_LABELS: Record<string, string> = {
@@ -20,6 +22,10 @@ const emptyForm = {
 };
 
 export default function VehiclesPage() {
+  const { user } = useAuth();
+  const canCreateVehicle = hasActionAccess(user?.role, "vehicles", "create");
+  const canEditVehicle = hasActionAccess(user?.role, "vehicles", "edit");
+  const canDeleteVehicle = hasActionAccess(user?.role, "vehicles", "delete");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState<any[]>([]);
@@ -98,8 +104,8 @@ export default function VehiclesPage() {
       id: "actions", header: "Actions",
       cell: ({ row }: any) => (
         <div className="flex gap-2">
-          <button onClick={() => openEdit(row.original)} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Edit"><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></button>
-          <button onClick={() => setDeleteTarget(row.original)} className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>
+          {canEditVehicle && <button onClick={() => openEdit(row.original)} className="p-1.5 rounded-md hover:bg-muted transition-colors" title="Edit"><Pencil className="w-3.5 h-3.5 text-muted-foreground" /></button>}
+          {canDeleteVehicle && <button onClick={() => setDeleteTarget(row.original)} className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5 text-destructive" /></button>}
         </div>
       )
     }
@@ -119,7 +125,7 @@ export default function VehiclesPage() {
           <Button variant="outline" size="sm" onClick={() => fetchVehicles(pagination.page)} disabled={loading}>
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           </Button>
-          <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add Vehicle</Button>
+          {canCreateVehicle && <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add Vehicle</Button>}
         </div>
       </div>
 

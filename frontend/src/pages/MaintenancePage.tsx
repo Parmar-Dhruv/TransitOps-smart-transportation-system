@@ -9,6 +9,8 @@ import { Modal } from "../components/common/Modal";
 import { maintenanceApi } from "../api/maintenance.api";
 import { vehiclesApi } from "../api/vehicles.api";
 import { toast } from "sonner";
+import { hasActionAccess } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
 const STATUS_LABELS: Record<string, string> = {
   SCHEDULED: "Scheduled", IN_PROGRESS: "In Progress", COMPLETED: "Completed"
@@ -20,6 +22,11 @@ const emptyForm = {
 };
 
 export default function MaintenancePage() {
+  const { user } = useAuth();
+  const canCreateMaintenance = hasActionAccess(user?.role, "maintenance", "create");
+  const canStartMaintenance = hasActionAccess(user?.role, "maintenance", "start");
+  const canCompleteMaintenance = hasActionAccess(user?.role, "maintenance", "complete");
+  const canDeleteMaintenance = hasActionAccess(user?.role, "maintenance", "delete");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [data, setData] = useState<any[]>([]);
@@ -124,19 +131,21 @@ export default function MaintenancePage() {
         const m = row.original; const isBusy = saving === m.id;
         return (
           <div className="flex gap-1.5">
-            {m.status === "SCHEDULED" && (
+            {canStartMaintenance && m.status === "SCHEDULED" && (
               <button onClick={() => handleStart(m.id)} disabled={!!saving} title="Start" className="p-1.5 rounded-md hover:bg-blue-500/10 text-blue-500 disabled:opacity-50 transition-colors">
                 {isBusy ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
               </button>
             )}
-            {m.status === "IN_PROGRESS" && (
+            {canCompleteMaintenance && m.status === "IN_PROGRESS" && (
               <button onClick={() => handleComplete(m.id)} disabled={!!saving} title="Complete" className="p-1.5 rounded-md hover:bg-emerald-500/10 text-emerald-500 disabled:opacity-50 transition-colors">
                 {isBusy ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
               </button>
             )}
-            <button onClick={() => setDeleteTarget(m)} disabled={!!saving} title="Delete" className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive disabled:opacity-50 transition-colors">
-              <Trash2 className="w-3.5 h-3.5" />
-            </button>
+            {canDeleteMaintenance && (
+              <button onClick={() => setDeleteTarget(m)} disabled={!!saving} title="Delete" className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive disabled:opacity-50 transition-colors">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         );
       }
@@ -155,7 +164,7 @@ export default function MaintenancePage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => fetchLogs(pagination.page)} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /></Button>
-          <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add Record</Button>
+          {canCreateMaintenance && <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add Record</Button>}
         </div>
       </div>
 

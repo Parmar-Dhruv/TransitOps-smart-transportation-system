@@ -9,6 +9,8 @@ import { fuelApi } from "../api/fuel.api";
 import { vehiclesApi } from "../api/vehicles.api";
 import { driversApi } from "../api/drivers.api";
 import { toast } from "sonner";
+import { hasActionAccess } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
 const emptyForm = {
   vehicleId: "", driverId: "", liters: 0, costPerLiter: 0,
@@ -16,6 +18,9 @@ const emptyForm = {
 };
 
 export default function FuelPage() {
+  const { user } = useAuth();
+  const canCreateFuel = hasActionAccess(user?.role, "fuel", "create");
+  const canDeleteFuel = hasActionAccess(user?.role, "fuel", "delete");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [data, setData] = useState<any[]>([]);
@@ -101,9 +106,11 @@ export default function FuelPage() {
     {
       id: "actions", header: "",
       cell: ({ row }: any) => (
-        <button onClick={() => setDeleteTarget(row.original)} className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors">
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        canDeleteFuel ? (
+          <button onClick={() => setDeleteTarget(row.original)} className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        ) : null
       )
     }
   ];
@@ -120,7 +127,7 @@ export default function FuelPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => fetchLogs(pagination.page)} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /></Button>
-          <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add Entry</Button>
+          {canCreateFuel && <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Add Entry</Button>}
         </div>
       </div>
 

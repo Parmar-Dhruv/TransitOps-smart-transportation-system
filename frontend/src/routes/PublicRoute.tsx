@@ -1,11 +1,13 @@
-import { Outlet, Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { getDefaultRoute } from "../config/permissions";
 
 export const PublicRoute = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
 
-  if (isLoading) return null; // Skeleton or blank during rehydration
+  if (isLoading) {
+    return null;
+  }
 
-  // Unauthenticated users hit this. Authenticated get bounced to Dashboard.
-  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />;
+  return isAuthenticated ? <Navigate to={getDefaultRoute(user?.role)} replace /> : <Outlet />;
 };

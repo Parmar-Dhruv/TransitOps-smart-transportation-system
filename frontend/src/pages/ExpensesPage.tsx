@@ -9,6 +9,8 @@ import { Modal } from "../components/common/Modal";
 import { expensesApi, type ExpenseCategory } from "../api/expenses.api";
 import { vehiclesApi } from "../api/vehicles.api";
 import { toast } from "sonner";
+import { hasActionAccess } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
 const CATEGORIES: ExpenseCategory[] = [
   "TOLL", "PARKING", "DRIVER_ALLOWANCE", "REPAIR", "MAINTENANCE", "INSURANCE", "PERMIT", "FINE", "MISCELLANEOUS"
@@ -26,6 +28,9 @@ const emptyForm = {
 };
 
 export default function ExpensesPage() {
+  const { user } = useAuth();
+  const canCreateExpense = hasActionAccess(user?.role, "expenses", "create");
+  const canDeleteExpense = hasActionAccess(user?.role, "expenses", "delete");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [data, setData] = useState<any[]>([]);
@@ -110,9 +115,11 @@ export default function ExpensesPage() {
     {
       id: "actions", header: "",
       cell: ({ row }: any) => (
-        <button onClick={() => setDeleteTarget(row.original)} className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors">
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
+        canDeleteExpense ? (
+          <button onClick={() => setDeleteTarget(row.original)} className="p-1.5 rounded-md hover:bg-destructive/10 text-destructive transition-colors">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        ) : null
       )
     }
   ];
@@ -129,7 +136,7 @@ export default function ExpensesPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => fetchExpenses(pagination.page)} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /></Button>
-          <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Log Expense</Button>
+          {canCreateExpense && <Button variant="premium" onClick={openAdd}><Plus className="mr-2 h-4 w-4" />Log Expense</Button>}
         </div>
       </div>
 

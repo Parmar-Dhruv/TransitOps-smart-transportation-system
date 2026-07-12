@@ -1,10 +1,11 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthLayout } from "../layouts/AuthLayout";
 import { DashboardLayout } from "../layouts/DashboardLayout";
 import { ProtectedRoute, RoleGuard } from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
+import { getDefaultRoute, APP_MODULES } from "../config/permissions";
+import { useAuth } from "../hooks/useAuth";
 
-// Pages
 import LoginPage from "../pages/LoginPage";
 import SignupPage from "../pages/SignupPage";
 import ForgotPasswordPage from "../pages/ForgotPasswordPage";
@@ -19,14 +20,33 @@ import ExpensesPage from "../pages/ExpensesPage";
 import ReportsPage from "../pages/ReportsPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
+const modulePages = {
+  dashboard: <DashboardPage />,
+  vehicles: <VehiclesPage />,
+  drivers: <DriversPage />,
+  trips: <TripsPage />,
+  maintenance: <MaintenancePage />,
+  fuel: <FuelPage />,
+  expenses: <ExpensesPage />,
+  reports: <ReportsPage />
+};
+
+const HomeRedirect = () => {
+  const { isAuthenticated, isLoading, user } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
+
+  return <Navigate to={isAuthenticated ? getDefaultRoute(user?.role) : "/login"} replace />;
+};
+
 export const AppRouter = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Route pointing to root to redirect to dash or login depending on auth state */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        
-        {/* Public Routes */}
+        <Route path="/" element={<HomeRedirect />} />
+
         <Route element={<PublicRoute />}>
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
@@ -36,31 +56,16 @@ export const AppRouter = () => {
           </Route>
         </Route>
 
-        {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            
-            {/* Example Role Guards */}
-            <Route element={<RoleGuard allowedRoles={["Fleet Manager", "Safety Officer", "Admin"]} />}>
-              <Route path="/vehicles" element={<VehiclesPage />} />
-              <Route path="/drivers" element={<DriversPage />} />
-              <Route path="/trips" element={<TripsPage />} />
-            </Route>
-
-            <Route element={<RoleGuard allowedRoles={["Fleet Manager", "Admin"]} />}>
-              <Route path="/maintenance" element={<MaintenancePage />} />
-            </Route>
-
-            <Route element={<RoleGuard allowedRoles={["Financial Analyst", "Admin"]} />}>
-              <Route path="/fuel" element={<FuelPage />} />
-              <Route path="/expenses" element={<ExpensesPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-            </Route>
+            {APP_MODULES.map((module) => (
+              <Route key={module.id} element={<RoleGuard allowedRoles={module.allowedRoles} />}>
+                <Route path={module.path} element={modulePages[module.id]} />
+              </Route>
+            ))}
           </Route>
         </Route>
 
-        {/* Catch All */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
