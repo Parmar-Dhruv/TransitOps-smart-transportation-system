@@ -1,36 +1,51 @@
-<<<<<<< HEAD
-# React + TypeScript + Vite
+# TransitOps - Smart Transport Operations Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+TransitOps is a production-quality, modular fleet operations and transport management platform designed for hackathons and scalable enterprise deployments.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Workspace Directory Structure
 
-## React Compiler
+The repository is structured as a modular workspace:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **`backend/`**: Express.js REST API with Prisma ORM, JWT authentication, RBAC, strict Zod validations, audit logs, and sequential integration tests.
+- **`frontend/`**: Vite + React 19 + TypeScript Single Page Application (SPA) with styled layout screens, live queries, and theme contexts.
+- **`database/`**: DDL schemas, indexes, views, enums, triggers, and mock seed files.
+- **`docs/`**: API specifications, setup guides, architectural outlines, and quality verification logs.
 
-## Expanding the Oxlint configuration
+---
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## Getting Started
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+### 1. Boot the Database
+Start the PostgreSQL container listening on port `5433`:
+```bash
+docker start transitops-postgres-5433
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
-=======
-# TransitOps-smart-transportation-system
->>>>>>> b878bbf0162dd381d04ecc78e0224ee44300ba09
+### 2. Install Workspace Packages
+Bootstrap all required dependencies:
+```bash
+npm run install:all
+```
+
+### 3. Run Dev Clients
+Launch both servers concurrently:
+```bash
+npm run dev:all
+```
+- **Backend API**: `http://localhost:5002`
+- **Frontend Client**: `http://localhost:5173`
+- **Interactive Swagger Docs**: `http://localhost:5002/api-docs`
+
+---
+
+## Commands Reference
+
+Run workspace commands from the root repository:
+- `npm run dev:backend`: Launch Express API server (nodemon).
+- `npm run dev:frontend`: Launch Vite React dev client.
+- `npm run test:backend`: Run Express integration tests.
+- `npm run build:frontend`: Compile TypeScript assets for production.
+- `npm run prisma:push`: Synchronize database schema.
+- `npm run prisma:seed`: Repopulate admin credentials.
