@@ -1,6 +1,8 @@
 import { useAuth } from "../../hooks/useAuth";
 import { useTheme } from "../../hooks/useTheme";
-import { Moon, Sun, Bell, Search, LogOut } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Avatar } from "../common/Avatar";
+import { Moon, Sun, Bell, Search, LogOut, User, Key } from "lucide-react";
 import { ROLE_LABELS } from "../../config/permissions";
 
 export const Navbar = () => {
@@ -42,26 +44,42 @@ export const Navbar = () => {
           </button>
 
           <div className="relative group">
-            <button className="-m-1.5 flex items-center p-1.5 hover:ring-2 ring-primary/20 rounded-full transition">
+            <Link to="/profile" className="-m-1.5 flex items-center p-1.5 hover:ring-2 ring-primary/20 rounded-full transition">
               <span className="sr-only">Open user menu</span>
-              <img
-                className="h-8 w-8 rounded-full bg-muted object-cover"
-                src={user?.avatar || "https://ui-avatars.com/api/?name=Admin&background=random"}
-                alt=""
+              <Avatar
+                name={user?.name}
+                src={user?.profileImage}
+                size="sm"
               />
-            </button>
+            </Link>
             
             {/* Simple Dropdown for MVP */}
             <div className="absolute right-0 top-full mt-2 hidden w-48 rounded-xl ring-1 ring-white/10 glass shadow-xl group-hover:block transition-all">
-              <div className="p-3">
+              <div className="p-3 border-b border-border">
                 <p className="text-sm font-medium">{user?.name || "Admin User"}</p>
                 <p className="text-xs text-muted-foreground truncate">{user?.email || "admin@transitops.com"}</p>
-                {user && <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{ROLE_LABELS[user.role]}</p>}
+                {user && <p className="text-[10px] mt-1 uppercase tracking-wider text-primary font-semibold">{ROLE_LABELS[user.role]}</p>}
+              </div>
+              <div className="p-1 space-y-0.5">
+                <Link 
+                  to="/profile"
+                  className="flex w-full items-center rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted/80 transition-colors"
+                >
+                  <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                  My Profile
+                </Link>
+                <Link 
+                  to="/profile#password"
+                  className="flex w-full items-center rounded-md px-3 py-2 text-sm text-foreground hover:bg-muted/80 transition-colors"
+                >
+                  <Key className="mr-2 h-4 w-4 text-muted-foreground" />
+                  Change Password
+                </Link>
               </div>
               <div className="border-t border-border p-1">
                 <button 
                   onClick={logout}
-                  className="flex w-full items-center rounded-md px-3 py-2 text-sm text-destructive hover:bg-destructive/10"
+                  className="flex w-full items-center rounded-md px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout

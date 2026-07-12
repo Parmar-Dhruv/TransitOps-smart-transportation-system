@@ -16,7 +16,9 @@ import fuelRoutes from './fuel/fuel.routes.js';
 import expenseRoutes from './expenses/expenses.routes.js';
 import dashboardRoutes from './dashboard/dashboard.routes.js';
 import reportsRoutes from './reports/reports.routes.js';
+import usersRoutes from './users/users.routes.js';
 import { ApiError } from './shared/errors/apiError.js';
+
 
 // Load OpenAPI Swagger Specification
 const swaggerDocument = JSON.parse(
@@ -77,8 +79,13 @@ app.get("/health", (req, res) => {
 // Serve interactive API documentation via Swagger UI
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+// Serve profile uploads folder statically
+const uploadsDir = new URL('../uploads', import.meta.url).pathname;
+app.use('/uploads', express.static(uploadsDir));
+
 // Mount modular sub-routers
 app.use('/auth', authRoutes);
+app.use('/users', usersRoutes);
 app.use('/vehicles', vehiclesRoutes);
 app.use('/drivers', driversRoutes);
 app.use('/api/v1/trips', tripsRoutes);

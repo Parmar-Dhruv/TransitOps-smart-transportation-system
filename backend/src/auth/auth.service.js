@@ -97,6 +97,9 @@ export const getUserById = async (id) => {
     name: user.name,
     role: user.role,
     phone: user.phone,
+    profileImage: user.profileImage,
+    department: user.department,
+    designation: user.designation,
     isActive: user.isActive,
     createdAt: user.createdAt
   };

@@ -1,5 +1,6 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { Avatar } from "../common/Avatar";
 import { cn } from "../../lib/utils";
 import { getAccessibleModules, ROLE_LABELS } from "../../config/permissions";
 
@@ -50,10 +51,13 @@ export const Sidebar = () => {
       </div>
 
       {user && (
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-3">
-          <p className="text-sm font-medium truncate">{user.name}</p>
-          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-        </div>
+        <Link to="/profile" className="flex items-center gap-3 rounded-xl border border-border/60 bg-muted/30 px-3 py-3 hover:bg-muted/65 transition-colors">
+          <Avatar name={user.name} src={user.profileImage} size="sm" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">{user.name}</p>
+            <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+          </div>
+        </Link>
       )}
     </aside>
   );

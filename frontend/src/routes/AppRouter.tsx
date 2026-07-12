@@ -18,6 +18,7 @@ import MaintenancePage from "../pages/MaintenancePage";
 import FuelPage from "../pages/FuelPage";
 import ExpensesPage from "../pages/ExpensesPage";
 import ReportsPage from "../pages/ReportsPage";
+import ProfilePage from "../pages/ProfilePage";
 import NotFoundPage from "../pages/NotFoundPage";
 
 const modulePages = {
@@ -58,6 +59,7 @@ export const AppRouter = () => {
 
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
+            <Route path="/profile" element={<ProfilePage />} />
             {APP_MODULES.map((module) => (
               <Route key={module.id} element={<RoleGuard allowedRoles={module.allowedRoles} />}>
                 <Route path={module.path} element={modulePages[module.id]} />

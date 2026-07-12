@@ -6,6 +6,10 @@ export interface User {
   email: string;
   role: Role;
   avatar?: string;
+  profileImage?: string | null;
+  phone?: string | null;
+  department?: string | null;
+  designation?: string | null;
 }
 
 export interface Vehicle {

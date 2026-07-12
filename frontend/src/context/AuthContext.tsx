@@ -11,6 +11,7 @@ interface AuthContextType {
   googleLogin: () => void;
   logout: () => void;
   refreshUser: () => Promise<User | null>;
+  updateUser: (partialUser: Partial<User>) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -94,9 +95,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
+  const updateUser = (partialUser: Partial<User>) => {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...partialUser };
+      localStorage.setItem("user", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, isAuthenticated: !!user, isLoading, login, register, googleLogin, logout, refreshUser }}
+      value={{ user, isAuthenticated: !!user, isLoading, login, register, googleLogin, logout, refreshUser, updateUser }}
     >
       {children}
     </AuthContext.Provider>

@@ -16,6 +16,14 @@ export default defineConfig({
         target: 'http://localhost:5002',
         changeOrigin: true
       },
+      '/users': {
+        target: 'http://localhost:5002',
+        changeOrigin: true
+      },
+      '/uploads': {
+        target: 'http://localhost:5002',
+        changeOrigin: true
+      },
       '/vehicles': {
         target: 'http://localhost:5002',
         changeOrigin: true
