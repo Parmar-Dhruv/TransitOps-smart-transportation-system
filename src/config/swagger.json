@@ -1,0 +1,422 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TransitOps - Smart Transport Operations Platform API Documentation",
+    "version": "1.0.0",
+    "description": "Production-quality backend REST API for managing vehicle assets, drivers, operations dispatching, maintenance scheduling, refuel logging, expense ledgers, KPI dashboards, and CSV reports."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5002",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Input your JWT token obtained from `/auth/login` to authorize subsequent operational routes."
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "admin@transitops.com" },
+          "password": { "type": "string", "example": "admin123" }
+        }
+      },
+      "RegisterUserRequest": {
+        "type": "object",
+        "required": ["email", "password", "name", "role"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "manager@transitops.com" },
+          "password": { "type": "string", "example": "managerpassword123" },
+          "name": { "type": "string", "example": "Operations Manager" },
+          "role": { "type": "string", "enum": ["ADMIN", "FLEET_MANAGER", "DISPATCHER", "SAFETY_OFFICER", "FINANCIAL_ANALYST"], "example": "FLEET_MANAGER" },
+          "phone": { "type": "string", "example": "+15550199" }
+        }
+      },
+      "Vehicle": {
+        "type": "object",
+        "required": ["registrationNumber", "make", "model", "year", "capacity", "odometer"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "registrationNumber": { "type": "string", "example": "MH-12-AB-1234" },
+          "make": { "type": "string", "example": "Tata" },
+          "model": { "type": "string", "example": "Prima 5530.S" },
+          "year": { "type": "integer", "example": 2024 },
+          "capacity": { "type": "number", "example": 40000 },
+          "odometer": { "type": "number", "example": 1000 },
+          "status": { "type": "string", "enum": ["AVAILABLE", "ON_TRIP", "IN_SHOP", "RETIRED"], "example": "AVAILABLE" }
+        }
+      },
+      "Driver": {
+        "type": "object",
+        "required": ["name", "email", "phone", "licenseNumber", "licenseExpiry"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string", "example": "Safe Driver Sam" },
+          "email": { "type": "string", "format": "email", "example": "sam@safe-driver.com" },
+          "phone": { "type": "string", "example": "+15550202" },
+          "licenseNumber": { "type": "string", "example": "DL-OK-999" },
+          "licenseExpiry": { "type": "string", "format": "date-time", "example": "2030-12-31T23:59:59Z" },
+          "safetyScore": { "type": "number", "example": 98 },
+          "status": { "type": "string", "enum": ["AVAILABLE", "ON_TRIP", "OFF_DUTY", "SUSPENDED"], "example": "AVAILABLE" }
+        }
+      },
+      "TripRequest": {
+        "type": "object",
+        "required": ["vehicleId", "driverId", "cargoWeight", "startOdometer"],
+        "properties": {
+          "vehicleId": { "type": "string", "format": "uuid" },
+          "driverId": { "type": "string", "format": "uuid" },
+          "cargoWeight": { "type": "number", "example": 15000 },
+          "startOdometer": { "type": "number", "example": 1000 },
+          "routeDetails": { "type": "string", "example": "Warehouse A to Port B" }
+        }
+      },
+      "TripCompleteRequest": {
+        "type": "object",
+        "required": ["endOdometer", "fuelUsed", "revenue"],
+        "properties": {
+          "endOdometer": { "type": "number", "example": 1250 },
+          "fuelUsed": { "type": "number", "example": 80.5 },
+          "revenue": { "type": "number", "example": 2500 }
+        }
+      },
+      "MaintenanceRequest": {
+        "type": "object",
+        "required": ["vehicleId", "description", "cost", "startDate"],
+        "properties": {
+          "vehicleId": { "type": "string", "format": "uuid" },
+          "description": { "type": "string", "example": "Scheduled engine oil service" },
+          "cost": { "type": "number", "example": 350 },
+          "status": { "type": "string", "enum": ["SCHEDULED", "IN_PROGRESS", "COMPLETED"], "example": "SCHEDULED" },
+          "startDate": { "type": "string", "format": "date-time", "example": "2026-07-12T12:00:00Z" }
+        }
+      },
+      "FuelRequest": {
+        "type": "object",
+        "required": ["vehicleId", "driverId", "liters", "costPerLiter", "odometer", "refuelDate"],
+        "properties": {
+          "vehicleId": { "type": "string", "format": "uuid" },
+          "driverId": { "type": "string", "format": "uuid" },
+          "liters": { "type": "number", "example": 120 },
+          "costPerLiter": { "type": "number", "example": 1.5 },
+          "odometer": { "type": "number", "example": 1300 },
+          "refuelDate": { "type": "string", "format": "date-time", "example": "2026-07-12T12:00:00Z" }
+        }
+      },
+      "ExpenseRequest": {
+        "type": "object",
+        "required": ["amount", "category", "date", "description"],
+        "properties": {
+          "vehicleId": { "type": "string", "format": "uuid", "nullable": true },
+          "tripId": { "type": "string", "format": "uuid", "nullable": true },
+          "driverId": { "type": "string", "format": "uuid", "nullable": true },
+          "amount": { "type": "number", "example": 150 },
+          "category": { "type": "string", "enum": ["TOLL", "PARKING", "DRIVER_ALLOWANCE", "REPAIR", "MAINTENANCE", "INSURANCE", "PERMIT", "FINE", "MISCELLANEOUS"], "example": "MAINTENANCE" },
+          "date": { "type": "string", "format": "date-time", "example": "2026-07-12T12:00:00Z" },
+          "description": { "type": "string", "example": "Tire rotation and alignment" }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate user credentials",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login success" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout current user session",
+        "responses": {
+          "200": { "description": "Session terminated" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "Retrieve logged in user session information",
+        "responses": {
+          "200": { "description": "Session context details" }
+        }
+      }
+    },
+    "/auth/register-user": {
+      "post": {
+        "summary": "Register new portal user (Admin only)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterUserRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created" }
+        }
+      }
+    },
+    "/vehicles": {
+      "get": {
+        "summary": "List vehicle assets (Auth)",
+        "parameters": [
+          { "name": "search", "in": "query", "type": "string", "required": false },
+          { "name": "status", "in": "query", "type": "string", "enum": ["AVAILABLE", "ON_TRIP", "IN_SHOP", "RETIRED"], "required": false },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "limit", "in": "query", "type": "integer", "default": 10 }
+        ],
+        "responses": {
+          "200": { "description": "Returned list" }
+        }
+      },
+      "post": {
+        "summary": "Register new vehicle asset (Admin, Fleet Manager)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Vehicle" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Vehicle registered" }
+        }
+      }
+    },
+    "/vehicles/{id}": {
+      "get": {
+        "summary": "Retrieve vehicle details",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Details" } }
+      },
+      "put": {
+        "summary": "Modify vehicle details (Admin, Fleet Manager)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Vehicle" } }
+          }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "summary": "Retire vehicle asset (Admin, Fleet Manager)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Retired status locked" } }
+      }
+    },
+    "/drivers": {
+      "get": {
+        "summary": "List driver profiles (Auth)",
+        "parameters": [
+          { "name": "search", "in": "query", "type": "string" },
+          { "name": "status", "in": "query", "type": "string", "enum": ["AVAILABLE", "ON_TRIP", "OFF_DUTY", "SUSPENDED"] },
+          { "name": "page", "in": "query", "type": "integer", "default": 1 },
+          { "name": "limit", "in": "query", "type": "integer", "default": 10 }
+        ],
+        "responses": { "200": { "description": "Returned list" } }
+      },
+      "post": {
+        "summary": "Register new driver profile (Admin, Fleet Manager, Safety Officer)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Driver" } }
+          }
+        },
+        "responses": { "201": { "description": "Driver registered" } }
+      }
+    },
+    "/drivers/{id}": {
+      "get": {
+        "summary": "Retrieve driver profile details",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Details" } }
+      },
+      "put": {
+        "summary": "Modify driver profile details (Admin, Fleet Manager, Safety Officer)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/Driver" } }
+          }
+        },
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "summary": "Delete driver profile (Admin, Fleet Manager)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Deleted successfully" } }
+      }
+    },
+    "/api/v1/trips": {
+      "get": {
+        "summary": "List operational trips",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string", "enum": ["DRAFT", "DISPATCHED", "COMPLETED", "CANCELLED"] } },
+          { "name": "vehicleId", "in": "query", "schema": { "type": "string", "format": "uuid" } },
+          { "name": "driverId", "in": "query", "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": { "200": { "description": "Returned list" } }
+      },
+      "post": {
+        "summary": "Register new Trip draft (Admin, Fleet Manager, Dispatcher)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/TripRequest" } }
+          }
+        },
+        "responses": { "201": { "description": "Draft created" } }
+      }
+    },
+    "/api/v1/trips/{id}/dispatch": {
+      "post": {
+        "summary": "Dispatch DRAFT trip (Admin, Fleet Manager, Dispatcher)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Dispatched transaction completed" } }
+      }
+    },
+    "/api/v1/trips/{id}/complete": {
+      "post": {
+        "summary": "Complete active trip (Admin, Fleet Manager, Dispatcher)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/TripCompleteRequest" } }
+          }
+        },
+        "responses": { "200": { "description": "Completed transaction completed" } }
+      }
+    },
+    "/api/v1/trips/{id}/cancel": {
+      "post": {
+        "summary": "Cancel active trip (Admin, Fleet Manager, Dispatcher)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "type": "object",
+              "required": ["cancelReason"],
+              "properties": { "cancelReason": { "type": "string", "example": "Client request cancelled" } }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Cancelled transaction completed" } }
+      }
+    },
+    "/api/v1/maintenance": {
+      "get": {
+        "summary": "List maintenance logs (Admin, Fleet Manager)",
+        "responses": { "200": { "description": "Logs list" } }
+      },
+      "post": {
+        "summary": "Schedule maintenance log (Admin, Fleet Manager)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/MaintenanceRequest" } }
+          }
+        },
+        "responses": { "201": { "description": "Scheduled successfully" } }
+      }
+    },
+    "/api/v1/maintenance/{id}/start": {
+      "post": {
+        "summary": "Start scheduled maintenance (Admin, Fleet Manager)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Started. Vehicle set to IN_SHOP" } }
+      }
+    },
+    "/api/v1/maintenance/{id}/complete": {
+      "post": {
+        "summary": "Complete maintenance (Admin, Fleet Manager)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Completed. Vehicle restored" } }
+      }
+    },
+    "/api/v1/fuel": {
+      "get": {
+        "summary": "List fuel logs (Finance, Fleet Manager)",
+        "responses": { "200": { "description": "Refills list" } }
+      },
+      "post": {
+        "summary": "Log fuel refill (Finance, Fleet Manager, Dispatcher)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/FuelRequest" } }
+          }
+        },
+        "responses": { "201": { "description": "Refill logged" } }
+      }
+    },
+    "/api/v1/expenses": {
+      "get": {
+        "summary": "List expenses ledger logs (Finance, Admin)",
+        "responses": { "200": { "description": "Ledger list" } }
+      },
+      "post": {
+        "summary": "Record expense entry (Finance, Admin)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ExpenseRequest" } }
+          }
+        },
+        "responses": { "201": { "description": "Recorded in ledger" } }
+      }
+    },
+    "/api/v1/dashboard": {
+      "get": {
+        "summary": "Retrieve complete dashboard KPIs and monthly chart statistics",
+        "responses": { "200": { "description": "Overview metrics payload" } }
+      }
+    },
+    "/api/v1/reports/fleet": {
+      "get": {
+        "summary": "Retrieve high-level fleet utilization reports (Admin, Finance, Fleet Manager)",
+        "responses": { "200": { "description": "Fleet summary statistics" } }
+      }
+    },
+    "/api/v1/reports/export/vehicles": {
+      "get": {
+        "summary": "Download vehicles report in CSV file format (Admin, Finance, Fleet Manager)",
+        "responses": {
+          "200": {
+            "description": "Attachment CSV file stream",
+            "content": { "text/csv": { "schema": { "type": "string" } } }
+          }
+        }
+      }
+    }
+  }
+}
