@@ -24,6 +24,10 @@ export default defineConfig({
         target: 'http://localhost:5002',
         changeOrigin: true
       },
+      '/trips': {
+        target: 'http://localhost:5002',
+        changeOrigin: true
+      },
       '/api': {
         target: 'http://localhost:5002',
         changeOrigin: true

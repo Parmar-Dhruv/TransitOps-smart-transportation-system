@@ -1,14 +1,14 @@
 import { axiosInstance } from "../lib/axios";
-import { Vehicle } from "../types";
 
 export const vehiclesApi = {
   getVehicles: async () => {
-    return axiosInstance.get<{ data: Vehicle[] }>('/vehicles');
+    return axiosInstance.get('/vehicles');
+    // Returns: { data: { success, message, data: { vehicles: [], pagination: {} } } }
   },
-  createVehicle: async (vehicle: Partial<Vehicle>) => {
+  createVehicle: async (vehicle: any) => {
     return axiosInstance.post('/vehicles', vehicle);
   },
-  updateVehicle: async (id: string, vehicle: Partial<Vehicle>) => {
+  updateVehicle: async (id: string, vehicle: any) => {
     return axiosInstance.put(`/vehicles/${id}`, vehicle);
   },
   deleteVehicle: async (id: string) => {

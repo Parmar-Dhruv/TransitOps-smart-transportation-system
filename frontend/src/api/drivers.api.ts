@@ -1,14 +1,14 @@
 import { axiosInstance } from "../lib/axios";
-import { Driver } from "../types";
 
 export const driversApi = {
   getDrivers: async () => {
-    return axiosInstance.get<{ data: Driver[] }>('/drivers');
+    return axiosInstance.get('/drivers');
+    // Returns: { data: { success, message, data: { drivers: [], pagination: {} } } }
   },
-  createDriver: async (driver: Partial<Driver>) => {
+  createDriver: async (driver: any) => {
     return axiosInstance.post('/drivers', driver);
   },
-  updateDriver: async (id: string, driver: Partial<Driver>) => {
+  updateDriver: async (id: string, driver: any) => {
     return axiosInstance.put(`/drivers/${id}`, driver);
   },
   deleteDriver: async (id: string) => {
