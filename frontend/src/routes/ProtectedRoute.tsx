@@ -16,6 +16,17 @@ export const ProtectedRoute = () => {
   return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
+const mapBackendToFrontendRole = (role: string): string => {
+  const map: Record<string, string> = {
+    "ADMIN": "Admin",
+    "FLEET_MANAGER": "Fleet Manager",
+    "DISPATCHER": "Dispatcher",
+    "SAFETY_OFFICER": "Safety Officer",
+    "FINANCIAL_ANALYST": "Financial Analyst"
+  };
+  return map[role] || role;
+};
+
 export const RoleGuard = ({ allowedRoles }: { allowedRoles: Role[] }) => {
   const { user } = useAuth();
 
@@ -23,7 +34,10 @@ export const RoleGuard = ({ allowedRoles }: { allowedRoles: Role[] }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(user.role) && user.role !== "Admin") {
+  const userRoleNormalized = mapBackendToFrontendRole(user.role);
+  const normalizedAllowedRoles = allowedRoles.map(mapBackendToFrontendRole);
+
+  if (!normalizedAllowedRoles.includes(userRoleNormalized) && userRoleNormalized !== "Admin") {
     return (
       <div className="flex h-screen items-center justify-center bg-background p-4 text-center">
         <div>
