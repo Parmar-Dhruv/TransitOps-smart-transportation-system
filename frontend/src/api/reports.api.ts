@@ -1,25 +1,24 @@
 import { axiosInstance } from "../lib/axios";
 
 export const reportsApi = {
-  getFleetSummary: async () => {
-    return axiosInstance.get('/api/v1/reports/fleet');
-  },
-  getVehiclesReport: async () => {
-    return axiosInstance.get('/api/v1/reports/vehicles');
-  },
-  getDriversReport: async () => {
-    return axiosInstance.get('/api/v1/reports/drivers');
-  },
-  getTripsReport: async () => {
-    return axiosInstance.get('/api/v1/reports/trips');
-  },
-  exportVehiclesCSV: () => {
-    return `${axiosInstance.defaults.baseURL || ''}/api/v1/reports/export/vehicles`;
-  },
-  exportDriversCSV: () => {
-    return `${axiosInstance.defaults.baseURL || ''}/api/v1/reports/export/drivers`;
-  },
-  exportTripsCSV: () => {
-    return `${axiosInstance.defaults.baseURL || ''}/api/v1/reports/export/trips`;
-  }
+  getFleetReport: () =>
+    axiosInstance.get('/api/v1/reports/fleet'),
+
+  getVehiclesReport: () =>
+    axiosInstance.get('/api/v1/reports/vehicles'),
+
+  getDriversReport: () =>
+    axiosInstance.get('/api/v1/reports/drivers'),
+
+  getTripsReport: () =>
+    axiosInstance.get('/api/v1/reports/trips'),
+
+  exportVehiclesCSV: () =>
+    axiosInstance.get('/api/v1/reports/export/vehicles', { responseType: 'blob' }),
+
+  exportDriversCSV: () =>
+    axiosInstance.get('/api/v1/reports/export/drivers', { responseType: 'blob' }),
+
+  exportTripsCSV: () =>
+    axiosInstance.get('/api/v1/reports/export/trips', { responseType: 'blob' })
 };

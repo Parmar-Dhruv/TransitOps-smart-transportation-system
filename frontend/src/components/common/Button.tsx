@@ -1,52 +1,49 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
+import { Loader2 } from "lucide-react"
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline: "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
-        premium: "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/30 hover:opacity-90 border border-primary/20",
-      },
-      size: {
-        default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
-        icon: "h-9 w-9",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "default" | "outline" | "premium" | "destructive" | "ghost"
+  size?: "sm" | "md" | "lg" | "icon"
+  isLoading?: boolean
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    // Fallback: If asChild is true, we simply cast children, but to keep it dependency-free we default to button
-    return (
-      <button
-        className={cn(buttonVariants({ variant, size, className }))}
-        ref={ref}
-        {...props}
-      />
-    )
-  }
-)
-Button.displayName = "Button"
+export function Button({
+  className,
+  variant = "default",
+  size = "md",
+  isLoading = false,
+  children,
+  disabled,
+  ...props
+}: ButtonProps) {
+  const base =
+    "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none select-none"
 
-export { Button, buttonVariants }
+  const variants = {
+    default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+    outline: "border border-border bg-transparent hover:bg-muted/60 text-foreground",
+    premium:
+      "bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:from-violet-700 hover:to-indigo-700 shadow-md shadow-indigo-500/20",
+    destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
+    ghost: "hover:bg-muted/60 text-foreground"
+  }
+
+  const sizes = {
+    sm: "h-8 px-3 text-xs",
+    md: "h-10 px-4 text-sm",
+    lg: "h-11 px-6 text-sm",
+    icon: "h-9 w-9 p-0"
+  }
+
+  return (
+    <button
+      className={cn(base, variants[variant], sizes[size], className)}
+      disabled={disabled || isLoading}
+      {...props}
+    >
+      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      {children}
+    </button>
+  )
+}
