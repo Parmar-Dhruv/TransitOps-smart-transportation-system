@@ -4,21 +4,73 @@ import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
-// Retrieve full dashboard data summary (All authenticated users)
 router.get(
   '/',
   authenticate,
   dashboardController.getDashboard
 );
 
-// Retrieve KPI metrics only (All authenticated users)
 router.get(
   '/kpis',
   authenticate,
   dashboardController.getKPIs
 );
 
-// Retrieve charts data aggregates (All authenticated users)
+router.get(
+  '/fleet-analytics',
+  authenticate,
+  dashboardController.getFleetAnalytics
+);
+
+router.get(
+  '/trip-analytics',
+  authenticate,
+  dashboardController.getTripAnalytics
+);
+
+router.get(
+  '/revenue-analytics',
+  authenticate,
+  dashboardController.getRevenueAnalytics
+);
+
+router.get(
+  '/fuel-analytics',
+  authenticate,
+  dashboardController.getFuelAnalytics
+);
+
+router.get(
+  '/maintenance-analytics',
+  authenticate,
+  dashboardController.getMaintenanceAnalytics
+);
+
+router.get(
+  '/expense-breakdown',
+  authenticate,
+  dashboardController.getExpenseBreakdown
+);
+
+router.get(
+  '/recent-activity',
+  authenticate,
+  dashboardController.getRecentActivity
+);
+
+router.get(
+  '/alerts',
+  authenticate,
+  dashboardController.getAlerts
+);
+
+router.get(
+  '/search',
+  authenticate,
+  dashboardController.search
+);
+
+// Backward compatibility route for previous dashboard chart API.
 router.get(
   '/charts',
   authenticate,
