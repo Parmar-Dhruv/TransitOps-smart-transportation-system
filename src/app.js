@@ -3,6 +3,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import swaggerUi from 'swagger-ui-express';
+import fs from 'fs';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import authRoutes from './auth/auth.routes.js';
@@ -16,14 +18,22 @@ import dashboardRoutes from './dashboard/dashboard.routes.js';
 import reportsRoutes from './reports/reports.routes.js';
 import { ApiError } from './shared/errors/apiError.js';
 
+// Load OpenAPI Swagger Specification
+const swaggerDocument = JSON.parse(
+  fs.readFileSync(new URL('./config/swagger.json', import.meta.url))
+);
+
 const app = express();
 
 // Security HTTP headers protection
-app.use(helmet());
+app.use(helmet({
+  // Allow Swagger UI inline scripts and assets to load without CSP blocks
+  contentSecurityPolicy: false
+}));
 
 // Enable Cross-Origin Resource Sharing
 app.use(cors({
-  origin: '*', // Customize this domain list in production
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -63,6 +73,9 @@ app.get("/health", (req, res) => {
     status: "OK"
   });
 });
+
+// Serve interactive API documentation via Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Mount modular sub-routers
 app.use('/auth', authRoutes);
