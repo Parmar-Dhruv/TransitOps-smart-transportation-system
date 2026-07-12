@@ -1,30 +1,68 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+
+// Load env configuration dynamically relative to this seed file
+dotenv.config({ path: new URL('../.env', import.meta.url) });
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seeding...');
 
-  const adminEmail = 'admin@transitops.com';
-  const existingAdmin = await prisma.user.findUnique({
-    where: { email: adminEmail }
-  });
+  const usersToSeed = [
+    {
+      email: 'admin@transitops.com',
+      password: 'admin123',
+      name: 'System Administrator',
+      role: 'ADMIN'
+    },
+    {
+      email: 'fleet@transitops.com',
+      password: 'transitops123',
+      name: 'Meera Shah',
+      role: 'FLEET_MANAGER'
+    },
+    {
+      email: 'dispatcher@transitops.com',
+      password: 'transitops123',
+      name: 'Rahul Patel',
+      role: 'DISPATCHER'
+    },
+    {
+      email: 'safety@transitops.com',
+      password: 'transitops123',
+      name: 'Nisha Rao',
+      role: 'SAFETY_OFFICER'
+    },
+    {
+      email: 'finance@transitops.com',
+      password: 'transitops123',
+      name: 'Amit Desai',
+      role: 'FINANCIAL_ANALYST'
+    }
+  ];
 
-  if (!existingAdmin) {
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    const admin = await prisma.user.create({
-      data: {
-        email: adminEmail,
-        password: hashedPassword,
-        name: 'System Administrator',
-        role: 'ADMIN',
-        isActive: true
-      }
+  for (const u of usersToSeed) {
+    const existing = await prisma.user.findUnique({
+      where: { email: u.email }
     });
-    console.log(`✅ Default admin user created: ${admin.email} (Password: admin123)`);
-  } else {
-    console.log('ℹ️ Default admin user already exists.');
+
+    if (!existing) {
+      const hashedPassword = await bcrypt.hash(u.password, 10);
+      const user = await prisma.user.create({
+        data: {
+          email: u.email,
+          password: hashedPassword,
+          name: u.name,
+          role: u.role,
+          isActive: true
+        }
+      });
+      console.log(`✅ User created: ${user.email} (Role: ${user.role}, Password: ${u.password})`);
+    } else {
+      console.log(`ℹ️ User already exists: ${u.email}`);
+    }
   }
 
   console.log('🌱 Seeding completed successfully!');
